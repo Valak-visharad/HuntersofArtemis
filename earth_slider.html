@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Moon Globe Comparison with Slider</title>
+    <link rel="stylesheet" href="https://cdn.knightlab.com/libs/juxtapose/latest/css/juxtapose.css">
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; }
+        .slider { width: 100%; height: 100vh; position: relative; }
+        .juxtapose .jx-slider {
+            border-left: 2px solid white !important; /* Customize the line */
+        }
+    </style>
+</head>
+<body>
+    <!-- Container for the comparison slider -->
+    <div id="comparison-slider" class="slider">
+        <!-- Juxtapose slider with Moon images -->
+        <div class="juxtapose">
+            <img src="moon.jpg" alt="Day Moon" />
+            <img src="moon_sexywaala.jpg" alt="Night Moon" />
+        </div>
+    </div>
+
+    <script src="https://cdn.knightlab.com/libs/juxtapose/latest/js/juxtapose.min.js"></script>
+    <script>
+        // Juxtapose Slider for moon comparison
+        document.addEventListener('DOMContentLoaded', function() {
+            new juxtapose.JXSlider('.juxtapose', [
+                {
+                    src: 'moon.jpg',
+                    label: 'Day Moon',
+                    credit: 'Credit for Day Moon'
+                },
+                {
+                    src: 'moon_sexywaala.jpg',
+                    label: 'Night Moon',
+                    credit: 'Credit for Night Moon'
+                }
+            ], {
+                animate: true,
+                showLabels: true,
+                showCredits: true,
+                startingPosition: "50%",  // Set the starting position of the slider
+                makeResponsive: true,
+                mode: 'horizontal',       // Horizontal sliding
+                dividerColor: '#FFFFFF',   // Set the divider color to white
+                dividerWidth: 2            // Set the width of the dividing line
+            });
+        });
+    </script>
+</body>
+</html>

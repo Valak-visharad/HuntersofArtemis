@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Moon Globe with Starry Background</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; position: absolute; top: 0; left: 0; z-index: 1; }
+        #starsBackground {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Cover the entire background */
+            z-index: 0; /* Ensure it stays behind the canvas */
+            background: url('stars.jpeg') no-repeat center center fixed;
+            background-size: cover; /* Ensure the background image covers the entire container */
+        }
+        #toggleButton {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background-color: #f0f0f0;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            z-index: 2; /* Ensure it is above the canvas */
+        }
+    </style>
+</head>
+<body>
+    <div id="starsBackground"></div>
+
+    <button id="toggleButton">Night</button>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script>
+        // Set up the scene, camera, and renderer
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Add ambient light to the scene
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+
+        // Add directional light to create shadows
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(5, 3, 5);
+        scene.add(directionalLight);
+
+        // Create the Moon as a sphere with texture
+        const textureLoader = new THREE.TextureLoader();
+        const dayTexture = textureLoader.load('moon_day.jpg');  // Day texture
+        const nightTexture = textureLoader.load('moon_night.jpg');  // Night texture
+
+        const geometry = new THREE.SphereGeometry(2, 32, 32);
+        const material = new THREE.MeshStandardMaterial({ map: dayTexture });
+        const moon = new THREE.Mesh(geometry, material);
+        scene.add(moon);
+
+        // Set the camera position
+        camera.position.z = 5;
+
+        // Add OrbitControls to allow mouse interaction
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+        // Animate the scene
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update(); // Ensure controls are updated on each frame
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Toggle between day and night textures
+        const toggleButton = document.getElementById('toggleButton');
+        let isDay = true;
+
+        toggleButton.addEventListener('click', () => {
+            isDay = !isDay;
+            material.map = isDay ? dayTexture : nightTexture;
+            toggleButton.textContent = isDay ? 'Enhanced' : 'Original';  // Change button text
+            material.needsUpdate = true;  // Ensure the material is updated
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
+    </script>
+</body>
+</html>

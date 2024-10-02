@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Moon Globe with Stars and Slider</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+        }
+        #leftCanvas, #rightCanvas {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        #rightCanvas {
+            clip-path: inset(0 50% 0 0); /* Initially hide the right half */
+        }
+        #divider {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background-color: white;
+            cursor: ew-resize;
+            left: 50%;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Left side (Day Moon) -->
+    <canvas id="leftCanvas"></canvas>
+
+    <!-- Right side (Night Moon) -->
+    <canvas id="rightCanvas"></canvas>
+
+    <!-- Movable divider (white line) -->
+    <div id="divider"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+<script>
+    // Set up the scenes, cameras, and renderers for both moons
+    const leftScene = new THREE.Scene();
+    const rightScene = new THREE.Scene();
+
+    const leftCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const rightCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+    const leftRenderer = new THREE.WebGLRenderer({ canvas: document.getElementById('leftCanvas'), alpha: true });
+    leftRenderer.setSize(window.innerWidth, window.innerHeight);
+    const rightRenderer = new THREE.WebGLRenderer({ canvas: document.getElementById('rightCanvas'), alpha: true });
+    rightRenderer.setSize(window.innerWidth, window.innerHeight);
+
+    // Set up background texture (stars) for both scenes
+    const textureLoader = new THREE.TextureLoader();
+    const starBackgroundTexture = textureLoader.load('stars.jpeg', function (texture) {
+        leftScene.background = texture;
+        rightScene.background = texture;
+    });
+
+    // Add lights for both scenes
+    const ambientLightLeft = new THREE.AmbientLight(0xffffff, 0.5);
+    const ambientLightRight = new THREE.AmbientLight(0xffffff, 0.5);
+    leftScene.add(ambientLightLeft);
+    rightScene.add(ambientLightRight);
+
+    const directionalLightLeft = new THREE.DirectionalLight(0xffffff, 1);
+    const directionalLightRight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLightLeft.position.set(5, 3, 5);
+    directionalLightRight.position.set(5, 3, 5);
+    leftScene.add(directionalLightLeft);
+    rightScene.add(directionalLightRight);
+
+    // Load Moon textures and create spheres for both moons
+    const moonTextureDay = textureLoader.load('moon_day.jpg');  // Day Moon texture
+    const moonTextureNight = textureLoader.load('moon_night.jpg');  // Night Moon texture
+
+    const geometry = new THREE.SphereGeometry(2, 32, 32);
+    const materialDay = new THREE.MeshStandardMaterial({ map: moonTextureDay });
+    const materialNight = new THREE.MeshStandardMaterial({ map: moonTextureNight });
+
+    const moonDay = new THREE.Mesh(geometry, materialDay);
+    const moonNight = new THREE.Mesh(geometry, materialNight);
+    leftScene.add(moonDay);
+    rightScene.add(moonNight);
+
+    // Set camera positions
+    leftCamera.position.z = 5;
+    rightCamera.position.z = 5;
+
+    // Enable 3D orbit controls for both moons
+    const leftControls = new THREE.OrbitControls(leftCamera, leftRenderer.domElement);
+    const rightControls = new THREE.OrbitControls(rightCamera, rightRenderer.domElement);
+
+    // Animate both scenes
+    function animate() {
+        requestAnimationFrame(animate);
+        leftControls.update();
+        rightControls.update();
+        leftRenderer.render(leftScene, leftCamera);
+        rightRenderer.render(rightScene, rightCamera);
+    }
+    animate();
+
+    // Handle window resizing for both canvases
+    window.addEventListener('resize', () => {
+        leftRenderer.setSize(window.innerWidth, window.innerHeight);
+        rightRenderer.setSize(window.innerWidth, window.innerHeight);
+        leftCamera.aspect = window.innerWidth / window.innerHeight;
+        rightCamera.aspect = window.innerWidth / window.innerHeight;
+        leftCamera.updateProjectionMatrix();
+        rightCamera.updateProjectionMatrix();
+    });
+
+    // Divider functionality for clipping right canvas
+    const divider = document.getElementById('divider');
+    let isDragging = false;
+
+    divider.addEventListener('mousedown', () => isDragging = true);
+    window.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+            const xPos = e.clientX / window.innerWidth * 100;
+            divider.style.left = `${xPos}%`;
+            document.getElementById('rightCanvas').style.clipPath = `inset(0 0 0 ${xPos}%)`;
+        }
+    });
+    window.addEventListener('mouseup', () => isDragging = false);
+
+</script>
+
+</body>
+</html>
